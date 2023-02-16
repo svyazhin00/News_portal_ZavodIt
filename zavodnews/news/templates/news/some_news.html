@@ -1,0 +1,17 @@
+{% extends 'news/main.html' %}
+{% load static %}
+
+
+{% block content %}
+    <ul>
+        <h2>{{title}}</h2>
+        Tеги:
+        {% for t in post.tags.all %}
+            <a href="{{ t.get_absolute_url }}">{{t}}/</a>
+        {% endfor %}
+        <p>{{post.content}}</p>
+        <button type="button" class="btn btn-outline-primary"><a href="{% url 'main' %}">Назад</a></button>
+        <hr>
+
+</ul>
+{% endblock %}

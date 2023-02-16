@@ -1,0 +1,22 @@
+{% extends 'news/main.html' %}
+{% load static %}
+
+
+{% block content%}
+
+<ul>
+    {% for p in tag.posts.all %}
+    <p>
+        <h2>{{p.title}}</h2>
+    <ul>
+        Tеги:
+        {% for t in p.tags.all %}
+        <a href="{{ t.get_absolute_url }}">{{t}}/</a>
+        {% endfor %}
+    </ul>
+        <p>{{p.content}}</p>
+        <hr>
+    </p
+    {% endfor %}
+</ul>
+{% endblock %}
