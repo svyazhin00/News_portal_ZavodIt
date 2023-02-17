@@ -31,11 +31,16 @@ def research(request):
 #функция представления конкретного поста
 def some_news(request, news_id):
     post = get_object_or_404(News, slug=news_id)
+    if post:
+        post.count += 1
+        post.save()
+
     context = {
         'post': post,
         'tags': post.tags,
         'menu': menu,
         'title': post.title,
+        'post.count': post.count,
     }
     return render(request, 'news/some_news.html', context=context)
 
@@ -43,7 +48,6 @@ def some_news(request, news_id):
 def tag_news(request, tag_slug):
 
     tag = get_object_or_404(Tag, slug=tag_slug)
-
     context = {
         'tag': tag,
         'menu': menu,
