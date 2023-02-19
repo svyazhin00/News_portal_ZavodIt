@@ -1,5 +1,24 @@
 {% extends 'news/main.html' %}
+{% load static %}
+<link type="text/css" href="{% static 'news/css/bootstrap.min.css' %}" rel="stylesheet" />
 
 {% block content%}
-<p>Популярные новости!</p>
+
+<ul>
+    {% for p in posts %}
+    <p>
+        <h2>{{p.title}}</h2>
+    <ul>
+        Tеги:
+        {% for t in p.tags.all %}
+        <a href="{{ t.get_absolute_url }}">{{t}}/</a>
+        {% endfor %}
+    </ul>
+        <p>{{p.content}}</p>
+        <p>Количество просмотров: {{p.count}}</p>
+        <button type="button" class="btn btn-outline-primary"><a href="{{ p.get_absolute_url }}">Читать пост</a></button>
+        <hr>
+    </p
+    {% endfor %}
+</ul>
 {% endblock %}

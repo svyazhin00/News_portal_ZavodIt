@@ -1,59 +1,86 @@
 from django.http import HttpResponse, HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
+from django.views import View
+from django.views.generic import *
 
 from news.models import *
-
-menu = [{'title':'Новости', 'url_name': 'main'},
-        {'title':'Популярные новости', 'url_name':'popular'},
-        {'title':'Поиск по тегу', 'url_name':'research'}
-        ]
+from news.utils import *
 
 
-# гланвая страница со всеми новостями
-def start_app(request):
-    posts = News.objects.all()
-    tags = Tag.objects.all()
+# главная страница со всеми новостями
+class StartApp(DataMixin, ListView):
+    posts = News
+    template_name = 'news/all_news.html'
+    context_object_name = 'posts'
 
-    context = {
-        'posts': posts,
-        'tags': tags,
-        'menu': menu,
-        'title': 'Свежие новости!'
-    }
-    return render(request, 'news/all_news.html', context=context)
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title='Главная страница')
+        return dict(list(context.items()) + list(c_def.items()))
 
-def popular_news(request):
-    return render(request, 'news/popular_news.html', {'menu': menu, 'title': 'Популярные новости!'})
+    def get_queryset(self):
+        return News.objects.all()
 
-def research(request):
-    return render(request, 'news/research.html', {'menu': menu, 'title': 'Поиск!'})
 
 #функция представления конкретного поста
-def some_news(request, news_id):
-    post = get_object_or_404(News, slug=news_id)
-    if post:
-        post.count += 1
-        post.save()
+class NewPost(DataMixin, DetailView):
+    post = News
+    template_name = 'news/some_news.html'
+    slug_url_kwarg = 'post_slug'
+    context_object_name = 'post'
 
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        c_def = self.get_user_context(title=context['post'])
+
+        if context:
+            context['object'].count += 1
+            context['object'].save()
+        return dict(list(context.items()) + list(c_def.items()))
+
+    def get_queryset(self):
+        return News.objects.filter(slug=self.kwargs['post_slug'])
+
+
+#Класс отображения постов по конкретному тегу
+class TagNews(DataMixin, ListView):
+    posts = News
+    template_name = 'news/all_news.html'
+    context_object_name = 'posts'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        tag_title = Tag.objects.filter(slug=self.kwargs['tag_slug'])
+        c_def = self.get_user_context(title='Новости - ' + str(tag_title[0].title))
+        return dict(list(context.items()) + list(c_def.items()))
+
+    def get_queryset(self):
+        return News.objects.filter(tags__slug=self.kwargs['tag_slug'])
+
+class Search(DataMixin, ListView):
+    posts = News
+    template_name = 'news/all_news.html'
+    context_object_name = 'posts'
+
+    def get_context_data(self, *, object_list=None, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search'] = self.request.GET.get('search')
+        c_def = self.get_user_context(title='Новости')
+
+        return dict(list(context.items()) + list(c_def.items()))
+
+    def get_queryset(self):
+        return News.objects.filter(tags__title__icontains=self.request.GET.get('search'))
+
+
+def popular_news(request):
+    posts = News.objects.order_by('-count')
     context = {
-        'post': post,
-        'tags': post.tags,
+        'posts': posts,
         'menu': menu,
-        'title': post.title,
-        'post.count': post.count,
     }
-    return render(request, 'news/some_news.html', context=context)
+    return render(request, 'news/popular_news.html', context=context)
 
-#функция представления списка постов по конкретному тегу
-def tag_news(request, tag_slug):
-
-    tag = get_object_or_404(Tag, slug=tag_slug)
-    context = {
-        'tag': tag,
-        'menu': menu,
-        'title': tag.title
-    }
-    return render(request, 'news/news_tag.html', context=context)
 
 
 def pageNotFound(request, exception):

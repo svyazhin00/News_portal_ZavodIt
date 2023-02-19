@@ -16,7 +16,7 @@ class News(models.Model):
     is_published = models.BooleanField(default=True)
 
     def get_absolute_url(self):
-        return reverse('post', kwargs={'news_id': self.slug})
+        return reverse('post', kwargs={'post_slug': self.slug})
 
     def __str__(self):
         return self.title

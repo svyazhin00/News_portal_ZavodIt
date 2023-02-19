@@ -3,11 +3,17 @@
 <link type="text/css" href="{% static 'news/css/bootstrap.min.css' %}" rel="stylesheet" />
 
 {% block content%}
-
+<form action="{% url 'search' %}" method="get">
+<div class="input-group">
+  <input type="search" type="text" name="search" class="form-control rounded" placeholder="Поиск по тегу" aria-label="Search" aria-describedby="search-addon" />
+  <button type="submit" class="btn btn-outline-primary">Искать</button>
+</div>
+</form>
 <ul>
     {% for p in posts %}
     <p>
         <h2>{{p.title}}</h2>
+        <p>{{p.time_create}}</p>
     <ul>
         Tеги:
         {% for t in p.tags.all %}
@@ -18,7 +24,7 @@
         <p>Количество просмотров: {{p.count}}</p>
         <button type="button" class="btn btn-outline-primary"><a href="{{ p.get_absolute_url }}">Читать пост</a></button>
         <hr>
-    </p
+    </p>
     {% endfor %}
 </ul>
 {% endblock %}
