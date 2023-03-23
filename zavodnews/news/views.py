@@ -6,6 +6,9 @@ from django.views.generic import *
 from news.models import *
 from news.utils import *
 
+from zavodnews.news.models import News, Tag
+from zavodnews.news.utils import DataMixin, menu
+
 
 # главная страница со всеми новостями
 class StartApp(DataMixin, ListView):
