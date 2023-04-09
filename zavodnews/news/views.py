@@ -1,8 +1,8 @@
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import *
-from rest_framework import generics
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView
+from rest_framework import generics, mixins
+from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, ListCreateAPIView
 from rest_framework.response import Response
 from .models import *
 
@@ -34,7 +34,7 @@ def current_news(request, **kwargs):
     return render(request, 'news/some_news.html')
 
 
-class NewsApiView(RetrieveUpdateDestroyAPIView):
+class NewsApiView(RetrieveUpdateDestroyAPIView, ListCreateAPIView):
     """Класс представления конретной новости"""
     serializer_class = NewsSerializer
     queryset = News.objects.all()
