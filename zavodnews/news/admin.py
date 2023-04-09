@@ -5,7 +5,7 @@ class NewsAdmin(admin.ModelAdmin):
     list_display = ('id', 'title','time_create', 'is_published')
     list_display_links = ('id', 'title')
     search_fields = ('title', 'content')
-    filter_horizontal = ['tags']
+    filter_horizontal = ['tags', ]
     prepopulated_fields = {'slug': ('title',)}
 
 

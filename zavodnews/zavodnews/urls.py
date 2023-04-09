@@ -20,6 +20,8 @@ from django.urls import path, include
 
 from news.views import *
 
+from news.views import pageNotFound
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('news.urls')),

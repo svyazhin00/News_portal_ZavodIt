@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.urls import reverse
 
@@ -5,11 +6,15 @@ from django.urls import reverse
 # Create your models here.
 
 class News(models.Model):
+#     like = models.ManyToManyField(User, related_name='likes', blank=True, null=True)
+#     dislike = models.ManyToManyField(User, related_name='dislikes', blank=True, null=True)
+    likes = models.PositiveIntegerField(default=0)
+    dislike = models.PositiveIntegerField(default=0)
     tags = models.ManyToManyField('Tag', blank=True, related_name='posts')
     title = models.CharField(max_length=255)
     content = models.TextField()
-    photo = models.ImageField(upload_to="photos/%Y/%m/%d/")
-    count = models.PositiveIntegerField(default=0)
+    photo = models.ImageField(upload_to="photos/%Y/%m/%d/", blank=True, null=True)
+    count_view = models.PositiveIntegerField(default=0)
     time_create = models.DateTimeField(auto_now_add=True)
     slug = models.SlugField()
     is_published = models.BooleanField(default=True)
@@ -26,7 +31,7 @@ class Tag(models.Model):
     slug = models.SlugField(max_length=50, unique=True)
 
     def __str__(self):
-        return f'{self.title}'
+        return self.title
 
     def get_absolute_url(self):
         return reverse('tag_news', kwargs={'tag_slug': self.slug})
