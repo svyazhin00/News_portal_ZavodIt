@@ -3,28 +3,129 @@
 <link type="text/css" href="{% static 'news/css/bootstrap.min.css' %}" rel="stylesheet" />
 
 {% block content%}
-<form action="{% url 'search' %}" method="get">
-<div class="input-group">
-  <input type="search" type="text" name="search" class="form-control rounded" placeholder="Поиск по тегу" aria-label="Search" aria-describedby="search-addon" />
-  <button type="submit" class="btn btn-outline-primary">Искать</button>
+<div id="news">
+  Loading...
 </div>
-</form>
-<ul>
-    {% for p in posts %}
-    <p>
-        <h2>{{p.title}}</h2>
-        <p>{{p.time_create}}</p>
-    <ul>
-        Tеги:
-        {% for t in p.tags.all %}
-        <a href="{{ t.get_absolute_url }}">{{t}}/</a>
-        {% endfor %}
-    </ul>
-        <p>{{p.content}}</p>
-        <p>Количество просмотров: {{p.count}}</p>
-        <button type="button" class="btn btn-outline-primary"><a href="{{ p.get_absolute_url }}">Читать пост</a></button>
-        <hr>
-    </p>
-    {% endfor %}
-</ul>
+
+<script>
+
+const newsElement = document.getElementById("news")
+// newsElement.innerHTML = 'Looding...'
+const xhr = new XMLHttpRequest()
+const method = 'GET'
+const url = '/api/news/'
+const responseType = "json"
+
+
+function handlerDidLike(news_id){
+    console.log(news_id)
+
+}
+
+function ReadNewsBtn(news){
+      let path = news.slug + "/"
+      return '<a href='+ path + '><button class="btn btn-primary btn-group-sm">Читать пост</button></a>'
+}
+function LikeBtn(news, like){
+   return "<button class='btn btn-primary btn-sm' onclick='SetActionLike(\""+ news + "\", \""+ like + "\")'>" + like + " Likes</button>"
+
+}
+function DislikeBtn(news, dislike){
+    return "<button class='btn btn-primary btn-sm' onclick='SetActionDislike(\""+ news + "\", \""+ dislike + "\")'>" + dislike + " Dislikes</button>"
+}
+function TagBtn(news) {
+  var tags_news = news.tags
+  var finalNewsStr = ""
+  for (i = 0; i < tags_news.length; i++) {
+    finalNewsStr += "<button class='btn btn-primary btn-sm' onclick='FindNewsByTag(\""+ tags_news[i].slug + "\")'>" + tags_news[i].title + "</button>"
+  }
+  return finalNewsStr
+}
+
+function FindNewsByTag(tag_slug){
+  const newsElement = document.getElementById("news")
+  // newsElement.innerHTML = 'Looding...'
+  const xhr = new XMLHttpRequest()
+  const method = 'GET'
+  const responseType = "json"
+  let url = "http://127.0.0.1:8000/api/news/search/" + tag_slug
+
+  xhr.responseType = responseType
+  xhr.open(method, url)
+  xhr.onload = function() {
+  const serverResponse = xhr.response
+  const listedItems = serverResponse.response
+  var finalNewsStr = ""
+  var i
+  for (i=0;i<listedItems.length;i++){
+    var newsObj = listedItems[i]
+    var currentItem = formatNewsElement(newsObj)
+    finalNewsStr += currentItem
+  }
+  newsElement.innerHTML = finalNewsStr
+}
+xhr.send()
+}
+
+
+function SetActionLike(news_slug, like) {
+  let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
+  let payload = {
+    "likes": Number(like) + 1
+  }
+  let options = {
+    method: "PATCH",
+    headers: {
+        'Accept': 'application/json, text/plain',
+        'Content-Type': 'application/json;charset=UTF-8'},
+    body: JSON.stringify(payload)
+  }
+  fetch(url, options).then(response => console.log(response.status))
+}
+
+function SetActionDislike(news_slug, dislike) {
+
+  let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
+  let payload = {
+    "dislike": Number(dislike) + 1
+  }
+  let options = {
+    method: "PATCH",
+    headers: {
+        'Accept': 'application/json, text/plain',
+        'Content-Type': 'application/json;charset=UTF-8'},
+    body: JSON.stringify(payload)
+  }
+  fetch(url, options).then(response => console.log(response.status))
+}
+function formatNewsElement(news) {
+  var formattedNews = "<hr>" + "<div class='mb-3 news'" + "align" + "=justify ><h1>" + news.title + "</h1>" +
+            "<h6>" + 'Теги: ' + TagBtn(news) + "</h6>"+
+            "<h6>" + 'Количество просмотров: ' + news.count_view + "</h6>"+
+            "<p>" + news.content +
+            "</p><div class='btn-group-sm'>" + LikeBtn(news.slug, news.likes) + DislikeBtn(news.slug, news.dislike) +
+            "</div>" +
+            "</div>" +
+            "<div class='btn-group'>" + ReadNewsBtn(news) +
+              "<hr>" + "</div>" + "<br>" + "<br>" + "<div>" + "<img src=" + news.photo + " " + "width=" + "400" + "height=" + "600"  + ">" + "</div>"
+    return formattedNews
+}
+
+xhr.responseType = responseType
+xhr.open(method, url)
+xhr.onload = function() {
+  const serverResponse = xhr.response
+  const listedItems = serverResponse.response
+  var finalNewsStr = ""
+  var i
+  for (i=0;i<listedItems.length;i++){
+    var newsObj = listedItems[i]
+    var currentItem = formatNewsElement(newsObj)
+    finalNewsStr += currentItem
+  }
+  newsElement.innerHTML = finalNewsStr
+}
+xhr.send()
+
+</script>
 {% endblock %}

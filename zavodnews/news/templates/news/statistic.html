@@ -1,0 +1,49 @@
+{% extends 'news/main.html' %}
+{% load static %}
+<link type="text/css" href="{% static 'news/css/bootstrap.min.css' %}" rel="stylesheet" />
+
+{% block content%}
+
+<div id="news">
+  Loading...
+</div>
+
+<script>
+
+const newsElement = document.getElementById("news")
+// newsElement.innerHTML = 'Looding...'
+const xhr = new XMLHttpRequest()
+const method = 'GET'
+const url = 'http://127.0.0.1:8000/api/statistics/'
+const responseType = "json"
+
+function ReadNewsBtn(news, title){
+      let path = news.slug + "/"
+
+      return '<a href='+ 'http://127.0.0.1:8000/news/' + path + '><button class="btn btn-primary btn-group-sm">' + title + "</button>" + '</a>'
+}
+
+function formatNewsElement(news) {
+  var formattedNews = "<hr>" + "<div class='mb-1 news'><h6>" + ReadNewsBtn(news, news.title) + ":" + " " + news.count_view + " views" + "<hr>" + "</div>"
+    return formattedNews
+}
+
+xhr.responseType = responseType
+xhr.open(method, url)
+xhr.onload = function() {
+  const serverResponse = xhr.response
+  const listedItems = serverResponse.response
+  var finalNewsStr = ""
+  var i
+  for (i=0;i<listedItems.length;i++){
+    var newsObj = listedItems[i]
+    var currentItem = formatNewsElement(newsObj)
+    finalNewsStr += currentItem
+  }
+  newsElement.innerHTML = finalNewsStr
+}
+xhr.send()
+
+</script>
+{% endblock %}
+
