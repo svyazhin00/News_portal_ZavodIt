@@ -25,12 +25,12 @@ function BackBtn(){
       return '<a href="/news/"><button class="btn btn-primary btn-group-sm">Вернуться к новостям</button></a>'
 }
 
-function LikeBtn(news, like){
-   return "<button class='btn btn-primary btn-sm' onclick='SetActionLike(\""+ news + "\", \""+ like + "\")'>" + like + " Likes</button>"
+function LikeBtn(news_slug, like){
+   return "<button class='btn btn-primary btn-sm' onclick='SetActionLike(\""+ news_slug + "\", \"" + like + "\")'>" + `<a id="like-${news_slug}">` + like + `</a>`+ " Likes</button>"
 
 }
-function DislikeBtn(news, dislike){
-    return "<button class='btn btn-primary btn-sm' onclick='SetActionDislike(\""+ news + "\", \""+ dislike + "\")'>" + dislike + " Dislikes</button>"
+function DislikeBtn(news_slug, dislike){
+    return "<button class='btn btn-primary btn-sm' onclick='SetActionDislike(\""+ news_slug + "\", \""+ dislike + "\")'>" + `<a id="dislike-${news_slug}">` + dislike + `</a>`+ " Dislikes</button>"
 }
 function TagBtn(news) {
   var tags_news = news.tags
@@ -67,9 +67,15 @@ xhr.send()
 }
 
 function SetActionLike(news_slug, like) {
+  let element = document.getElementById("like-" + news_slug)
+  console.log("like" + news_slug)
+  let value = element.innerHTML
+  ++value
+  element.innerHTML = value
+
   let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
   let payload = {
-    "likes": Number(like) + 1
+    "likes": value
   }
   let options = {
     method: "PATCH",
@@ -82,10 +88,14 @@ function SetActionLike(news_slug, like) {
 }
 
 function SetActionDislike(news_slug, dislike) {
+  let element = document.getElementById("dislike-" + news_slug)
+  let value = element.innerHTML
+  ++value
+  element.innerHTML = value
 
   let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
   let payload = {
-    "dislike": Number(dislike) + 1
+    "dislike": value
   }
   let options = {
     method: "PATCH",
