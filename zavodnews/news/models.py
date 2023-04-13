@@ -6,10 +6,12 @@ from django.urls import reverse
 # Create your models here.
 
 class News(models.Model):
-#     like = models.ManyToManyField(User, related_name='likes', blank=True, null=True)
-#     dislike = models.ManyToManyField(User, related_name='dislikes', blank=True, null=True)
+    user_likes = models.ManyToManyField(User, related_name='likes', blank=True, null=True)
+    user_dislikes = models.ManyToManyField(User, related_name='dislikes', blank=True, null=True)
     likes = models.PositiveIntegerField(default=0)
     dislike = models.PositiveIntegerField(default=0)
+    status_like = models.BooleanField(default=False)
+    status_dislike = models.BooleanField(default=False)
     tags = models.ManyToManyField('Tag', blank=True, related_name='posts')
     title = models.CharField(max_length=255)
     content = models.TextField()

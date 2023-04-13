@@ -1,8 +1,11 @@
+import json
+
 from django.http import HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
 from django.views.generic import *
 from rest_framework import generics, mixins
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListAPIView, ListCreateAPIView
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from .models import *
 
@@ -20,6 +23,7 @@ class NewsListApiView(generics.ListCreateAPIView):
     """Класс получения списка всех новостей"""
     queryset = News.objects.all()
     serializer_class = NewsSerializer
+    # permission_classes = [IsAuthenticated, ]
 
     def list(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -52,6 +56,81 @@ class NewsApiView(RetrieveUpdateDestroyAPIView, ListCreateAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
 
+    # def patch(self, request, *args, **kwargs):
+    #     post = News.objects.get(slug=self.kwargs['slug'])
+    #     user = User.objects.get(username=request.user)
+    #
+    #     if list(request.data.keys())[0] == 'dislike':
+    #         post_dislike_user_list = post.user_dislikes.all()
+    #         if user in post_dislike_user_list:
+    #             post.dislike -= 1
+    #             post.user_dislikes.remove(user)
+    #         else:
+    #             post.dislike += 1
+    #             post.user_dislikes.add(user)
+    #     else:
+    #         post_like_user_list = post.user_likes.all()
+    #         if user in post_like_user_list:
+    #             post.likes -= 1
+    #             post.user_likes.remove(user)
+    #         else:
+    #             post.likes += 1
+    #             post.user_likes.add(user)
+    #     post.save()
+    #     print(post.dislike, post.likes)
+    #
+    #     return self.partial_update(request, *args, **kwargs)
+
+
+class LikeNewsApiView(RetrieveUpdateDestroyAPIView):
+    """Класс для лайка поста"""
+    serializer_class = NewsSerializer
+    queryset = News.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        post = News.objects.get(slug=self.kwargs['slug'])
+        user = User.objects.get(username=request.user)
+        post_like_user_list = post.user_likes.all()
+        if user in post_like_user_list:
+            post.likes -= 1
+            post.user_likes.remove(user)
+        else:
+            post.likes += 1
+            post.user_likes.add(user)
+        post.save()
+        serializer = NewsSerializer(post).data
+        return self.retrieve(request, *args, **kwargs)
+
+    def get_object(self, **kwargs):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(News, slug=self.kwargs['slug'])
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+class DislikeNewsApiView(RetrieveUpdateDestroyAPIView):
+    """Класс для дизлайка поста"""
+    serializer_class = NewsSerializer
+    queryset = News.objects.all()
+
+    def get(self, request, *args, **kwargs):
+        post = News.objects.get(slug=self.kwargs['slug'])
+        user = User.objects.get(username=request.user)
+        post_dislike_user_list = post.user_dislikes.all()
+        if user in post_dislike_user_list:
+            post.dislike -= 1
+            post.user_dislikes.remove(user)
+        else:
+            post.dislike += 1
+            post.user_dislikes.add(user)
+        post.save()
+        serializer = NewsSerializer(post).data
+        return self.retrieve(request, *args, **kwargs)
+
+    def get_object(self, **kwargs):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(News, slug=self.kwargs['slug'])
+        self.check_object_permissions(self.request, obj)
+        return obj
 
 class Search(ListAPIView):
     """Класс представления новостей по конкретному тегу"""
@@ -85,6 +164,10 @@ class StatisticsApiView(generics.ListCreateAPIView):
         response_data = {'response': response.data}
         response.data = response_data
         return response
+
+def login(request):
+    """Функция для выгрузки конкретной новости"""
+    return render(request, 'news/login.html')
 
 
 def pageNotFound(request, exception):

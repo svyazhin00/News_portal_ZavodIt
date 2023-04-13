@@ -26,9 +26,8 @@ function ReadNewsBtn(news){
       let path = news.slug + "/"
       return '<a href='+ path + '><button class="btn btn-primary btn-group-sm">Читать пост</button></a>'
 }
-function LikeBtn(news_slug, like){
-  console.log(like)
-   return "<button class='btn btn-primary btn-sm' onclick='SetActionLike(\""+ news_slug + "\", \"" + like + "\")'>" + `<a id="like-${news_slug}">` + like + `</a>`+ " Likes</button>"
+function LikeBtn(news_slug, like) {
+    return "<button class='btn btn-primary btn-sm' onclick='SetActionLike(\"" + news_slug + "\", \"" + like + "\")'>" + `<a id="like-${news_slug}">` + like + `</a>` + " Likes</button>"
 }
 function DislikeBtn(news_slug, dislike){
     return "<button class='btn btn-primary btn-sm' onclick='SetActionDislike(\""+ news_slug + "\", \""+ dislike + "\")'>" + `<a id="dislike-${news_slug}">` + dislike + `</a>`+ " Dislikes</button>"
@@ -45,7 +44,6 @@ function TagBtn(news) {
 
 function FindNewsByTag(tag_slug){
   const newsElement = document.getElementById("news")
-  // newsElement.innerHTML = 'Looding...'
   const xhr = new XMLHttpRequest()
   const method = 'GET'
   const responseType = "json"
@@ -71,44 +69,42 @@ xhr.send()
 
 function SetActionLike(news_slug, like) {
   let element = document.getElementById("like-" + news_slug)
-  console.log("like" + news_slug)
   let value = element.innerHTML
-  ++value
-  element.innerHTML = value
 
-  let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
-  let payload = {
-    "likes": value
-  }
+  let url = "http://127.0.0.1:8000/api/like_news/" + news_slug + "/"
 
+  const csrftoken = getCookie('csrftoken')
   let options = {
-    method: "PATCH",
+    method: "GET",
     headers: {
         'Accept': 'application/json, text/plain',
-        'Content-Type': 'application/json;charset=UTF-8'},
-    body: JSON.stringify(payload)
+        'Content-Type': 'application/json;charset=UTF-8',
+        'X-CSRFToken': csrftoken,
+        },
+    mode: 'cors',
+    // body: JSON.stringify(payload),
+    cache: 'no-cache',
+    credentials: 'include'
   }
-  fetch(url, options).then(response => console.log(response.status))
+  fetch(url, options).then((response) => {return response.json();}).then((data) => element.innerHTML = data['likes']);
 }
 
 function SetActionDislike(news_slug, dislike) {
   var element = document.getElementById("dislike-" + news_slug)
   var value = element.innerHTML
-  ++value
-  element.innerHTML = value
 
-  let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
-  let payload = {
-    "dislike": value
-  }
+  let url = "http://127.0.0.1:8000/api/dislike_news/" + news_slug + "/"
+
+  const csrftoken = getCookie('csrftoken')
+  console.log(csrftoken)
   let options = {
-    method: "PATCH",
+    method: "GET",
     headers: {
-        'Accept': 'application/json, text/plain',
-        'Content-Type': 'application/json;charset=UTF-8'},
-    body: JSON.stringify(payload)
+        'Accept':'application/json, text/plain',
+        'Content-Type':'application/json;charset=UTF-8',
+        'X-CSRFToken': csrftoken},
   }
-  fetch(url, options).then(response => console.log(response.status))
+  fetch(url, options).then((response) => {return response.json();}).then((data) => element.innerHTML = data['dislike']);
 }
 function formatNewsElement(news) {
   var formattedNews = "<hr>" + "<div class='mb-3 news'" + "align" + "=justify ><h1>" + news.title + "</h1>" +
@@ -139,5 +135,20 @@ xhr.onload = function() {
 }
 xhr.send()
 
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 {% endblock %}
