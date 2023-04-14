@@ -15,7 +15,7 @@ urlpatterns = [
     path('news/<slug:slug>/', current_news, name='current_news'),
     path('api/news/<slug:slug>/', NewsApiView.as_view(), name='api_current_news'),
     path('api/like_news/<slug:slug>/', LikeNewsApiView.as_view()),
-    path('api/dislike_news/<slug:slug>/',DislikeNewsApiView.as_view()),
+    path('api/dislike_news/<slug:slug>/', DislikeNewsApiView.as_view()),
 
     path('api/news/search/<slug:slug>', Search.as_view(), name='search'),
 

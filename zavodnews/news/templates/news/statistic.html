@@ -32,7 +32,7 @@ xhr.responseType = responseType
 xhr.open(method, url)
 xhr.onload = function() {
   const serverResponse = xhr.response
-  const listedItems = serverResponse.response
+  const listedItems = serverResponse.response["results"]
   var finalNewsStr = ""
   var i
   for (i=0;i<listedItems.length;i++){
