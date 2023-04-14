@@ -4,24 +4,9 @@
 
 {% block content%}
 <div id="news">
-  Loading...
 </div>
 
 <script>
-
-const newsElement = document.getElementById("news")
-// newsElement.innerHTML = 'Looding...'
-const xhr = new XMLHttpRequest()
-const method = 'GET'
-const url = '/api/news/'
-const responseType = "json"
-
-
-function handlerDidLike(news_id){
-    console.log(news_id)
-
-}
-
 function ReadNewsBtn(news){
       let path = news.slug + "/"
       return '<a href='+ path + '><button class="btn btn-primary btn-group-sm">Читать пост</button></a>'
@@ -53,7 +38,8 @@ function FindNewsByTag(tag_slug){
   xhr.open(method, url)
   xhr.onload = function() {
   const serverResponse = xhr.response
-  const listedItems = serverResponse.response
+  const listedItems = serverResponse.response["results"]
+    console.log(listedItems)
   var finalNewsStr = ""
   var i
   for (i=0;i<listedItems.length;i++){
@@ -119,11 +105,19 @@ function formatNewsElement(news) {
     return formattedNews
 }
 
+const newsElement = document.getElementById("news")
+const xhr = new XMLHttpRequest()
+const method = 'GET'
+const url = '/api/news/'
+const responseType = "json"
+
+let next_page = null
 xhr.responseType = responseType
 xhr.open(method, url)
 xhr.onload = function() {
   const serverResponse = xhr.response
-  const listedItems = serverResponse.response
+  const listedItems = serverResponse.response["results"]
+  let nextPageUrl = serverResponse.response.next
   var finalNewsStr = ""
   var i
   for (i=0;i<listedItems.length;i++){
@@ -131,7 +125,25 @@ xhr.onload = function() {
     var currentItem = formatNewsElement(newsObj)
     finalNewsStr += currentItem
   }
-  newsElement.innerHTML = finalNewsStr
+  console.log(nextPageUrl)
+  if (finalNewsStr) {
+      newsElement.innerHTML += finalNewsStr
+  }
+  else {
+    newsElement.innerHTML = finalNewsStr
+  }
+  window.onscroll = function() {
+    window.addEventListener('scroll', event => {
+    if (scrollY + innerHeight === document.body.scrollHeight) {
+       if (nextPageUrl !== null){
+        xhr.open(method, nextPageUrl)
+        xhr.onload
+        xhr.send()
+       }
+    }
+  })
+}
+  return finalNewsStr
 }
 xhr.send()
 

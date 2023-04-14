@@ -27,7 +27,6 @@ function BackBtn(){
 
 function LikeBtn(news_slug, like){
    return "<button class='btn btn-primary btn-sm' onclick='SetActionLike(\""+ news_slug + "\", \"" + like + "\")'>" + `<a id="like-${news_slug}">` + like + `</a>`+ " Likes</button>"
-
 }
 function DislikeBtn(news_slug, dislike){
     return "<button class='btn btn-primary btn-sm' onclick='SetActionDislike(\""+ news_slug + "\", \""+ dislike + "\")'>" + `<a id="dislike-${news_slug}">` + dislike + `</a>`+ " Dislikes</button>"
@@ -53,7 +52,7 @@ function FindNewsByTag(tag_slug){
   xhr.open(method, url)
   xhr.onload = function() {
   const serverResponse = xhr.response
-  const listedItems = serverResponse.response
+  const listedItems = serverResponse.response["results"]
   var finalNewsStr = ""
   var i
   for (i=0;i<listedItems.length;i++){
@@ -66,45 +65,62 @@ function FindNewsByTag(tag_slug){
 xhr.send()
 }
 
+// function SetActionLike(news_slug, like) {
+//   let element = document.getElementById("like-" + news_slug)
+//   console.log("like" + news_slug)
+//   let value = element.innerHTML
+//   ++value
+//   element.innerHTML = value
+//
+//   let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
+//   let payload = {
+//     "likes": value
+//   }
+//   let options = {
+//     method: "PATCH",
+//     headers: {
+//         'Accept': 'application/json, text/plain',
+//         'Content-Type': 'application/json;charset=UTF-8'},
+//     body: JSON.stringify(payload)
+//   }
+//   fetch(url, options).then(response => console.log(response.status))
+// }
 function SetActionLike(news_slug, like) {
   let element = document.getElementById("like-" + news_slug)
-  console.log("like" + news_slug)
   let value = element.innerHTML
-  ++value
-  element.innerHTML = value
 
-  let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
-  let payload = {
-    "likes": value
-  }
+  let url = "http://127.0.0.1:8000/api/like_news/" + news_slug + "/"
+
+  const csrftoken = getCookie('csrftoken')
   let options = {
-    method: "PATCH",
+    method: "GET",
     headers: {
         'Accept': 'application/json, text/plain',
-        'Content-Type': 'application/json;charset=UTF-8'},
-    body: JSON.stringify(payload)
+        'Content-Type': 'application/json;charset=UTF-8',
+        'X-CSRFToken': csrftoken,
+        },
+    mode: 'cors',
+    cache: 'no-cache',
+    credentials: 'include'
   }
-  fetch(url, options).then(response => console.log(response.status))
+  fetch(url, options).then((response) => {return response.json();}).then((data) => element.innerHTML = data['likes']);
 }
-
 function SetActionDislike(news_slug, dislike) {
-  let element = document.getElementById("dislike-" + news_slug)
-  let value = element.innerHTML
-  ++value
-  element.innerHTML = value
+  var element = document.getElementById("dislike-" + news_slug)
+  var value = element.innerHTML
 
-  let url = "http://127.0.0.1:8000/api/news/" + news_slug + "/"
-  let payload = {
-    "dislike": value
-  }
+  let url = "http://127.0.0.1:8000/api/dislike_news/" + news_slug + "/"
+
+  const csrftoken = getCookie('csrftoken')
+  console.log(csrftoken)
   let options = {
-    method: "PATCH",
+    method: "GET",
     headers: {
-        'Accept': 'application/json, text/plain',
-        'Content-Type': 'application/json;charset=UTF-8'},
-    body: JSON.stringify(payload)
+        'Accept':'application/json, text/plain',
+        'Content-Type':'application/json;charset=UTF-8',
+        'X-CSRFToken': csrftoken},
   }
-  fetch(url, options).then(response => console.log(response.status))
+  fetch(url, options).then((response) => {return response.json();}).then((data) => element.innerHTML = data['dislike']);
 }
 
 function formatNewsElement(news) {
@@ -126,5 +142,21 @@ xhr.onload = function() {
     newsElement.innerHTML = value
 }
 xhr.send()
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
 </script>
 {% endblock %}
